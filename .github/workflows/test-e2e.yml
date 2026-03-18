@@ -48,7 +48,7 @@ jobs:
       - name: Collect e2e coverage
         if: always()
         run: |
-          mkdir -p coverage-output
+          mkdir -p coverage-output && chmod 777 coverage-output
           cp $HOME/.kube/config /tmp/kubeconfig && chmod 644 /tmp/kubeconfig
           podman run --rm \
             --network host \
