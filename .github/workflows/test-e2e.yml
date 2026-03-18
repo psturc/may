@@ -38,10 +38,11 @@ jobs:
         run: kind version
 
       - name: Run e2e tests with instrumented image
+        env:
+          ENABLE_COVERAGE: "true"
         run: |
           go mod tidy
           make manifests generate fmt vet vet-e2e setup-test-e2e
-          ENABLE_COVERAGE=true make docker-build IMG=example.com/may:v0.0.1
           KIND=$(which kind) KIND_CLUSTER=may-test-e2e SKIP_E2E_CLEANUP=true \
             go test -tags=e2e ./test/e2e/ -v -ginkgo.v -ginkgo.focus="should run successfully" -timeout 30m
 
