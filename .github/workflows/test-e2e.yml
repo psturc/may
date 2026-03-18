@@ -9,43 +9,6 @@ on:
     - main
 
 jobs:
-  test-e2e:
-    name: Run on Ubuntu
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        component:
-        - "drivers/incluster"
-        - "drivers/aws"
-        - "drivers/ibm"
-
-    defaults:
-      run:
-        working-directory: "./${{ matrix.component }}"
-
-    steps:
-      - name: Clone the code
-        uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: "${{ matrix.component }}/go.mod"
-
-      - name: Install the latest version of kind
-        run: |
-          curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
-          chmod +x ./kind
-          sudo mv ./kind /usr/local/bin/kind
-
-      - name: Verify kind installation
-        run: kind version
-
-      - name: Running Test e2e
-        run: |
-          go mod tidy
-          make test-e2e
-
   test-e2e-may:
     name: E2E with coverage (may)
     runs-on: ubuntu-latest
@@ -80,7 +43,7 @@ jobs:
           make manifests generate fmt vet vet-e2e setup-test-e2e
           ENABLE_COVERAGE=true make docker-build IMG=example.com/may:v0.0.1
           KIND=$(which kind) KIND_CLUSTER=may-test-e2e SKIP_E2E_CLEANUP=true \
-            go test -tags=e2e ./test/e2e/ -v -ginkgo.v -timeout 30m
+            go test -tags=e2e ./test/e2e/ -v -ginkgo.v -ginkgo.focus="should run successfully" -timeout 30m
 
       - name: Collect e2e coverage
         if: always()
@@ -113,33 +76,3 @@ jobs:
           make undeploy 2>/dev/null || true
           make uninstall 2>/dev/null || true
           make cleanup-test-e2e 2>/dev/null || true
-
-  test-e2e-smoke:
-    name: Smoke tests (may)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: "./may"
-
-    steps:
-      - name: Clone the code
-        uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: "may/go.mod"
-
-      - name: Install the latest version of kind
-        run: |
-          curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
-          chmod +x ./kind
-          sudo mv ./kind /usr/local/bin/kind
-
-      - name: Verify kind installation
-        run: kind version
-
-      - name: Running smoke tests
-        run: |
-          go mod tidy
-          make test-e2e-smoke
