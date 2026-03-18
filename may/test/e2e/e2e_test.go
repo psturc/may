@@ -21,6 +21,7 @@ package e2e
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -67,6 +68,11 @@ var _ = Describe("Manager", Ordered, func() {
 	// After all tests have been executed, clean up by undeploying the controller, uninstalling CRDs,
 	// and deleting the namespace.
 	AfterAll(func() {
+		if os.Getenv("SKIP_E2E_CLEANUP") == "true" {
+			_, _ = fmt.Fprintf(GinkgoWriter, "SKIP_E2E_CLEANUP is set, skipping cleanup\n")
+			return
+		}
+
 		By("cleaning up the curl pod for metrics")
 		cmd := exec.Command("kubectl", "delete", "pod", "curl-metrics", "-n", namespace)
 		_, _ = utils.Run(cmd)

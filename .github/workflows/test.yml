@@ -12,6 +12,8 @@ jobs:
   test:
     name: Run on Ubuntu
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     strategy:
       matrix:
         component:
@@ -37,3 +39,11 @@ jobs:
         run: |
           go mod tidy
           make test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
+          flags: unit-tests
+          files: ${{ matrix.component }}/cover.out
+          fail_ci_if_error: false

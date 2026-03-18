@@ -116,6 +116,11 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
+	if os.Getenv("SKIP_E2E_CLEANUP") == "true" {
+		_, _ = fmt.Fprintf(GinkgoWriter, "SKIP_E2E_CLEANUP is set, skipping suite cleanup\n")
+		return
+	}
+
 	if !skipPrometheusInstall {
 		_, _ = fmt.Fprintln(GinkgoWriter, "Uninstalling Prometheus")
 		Expect(utils.UninstallPrometheus()).To(Succeed(), "Failed to uninstall Prometheus")
